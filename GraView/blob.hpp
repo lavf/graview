@@ -44,12 +44,20 @@ public:
     void setResult(unsigned int x) { result = x; };
     unsigned int& getResult() { return result; };
 
+    void setMaxTempInt(unsigned int x) { maxTempInt = x; };
+    int& getMaxTempInt() { return maxTempInt; };
+
+    void setMinTempInt(unsigned int x) { minTempInt = x; };
+    int& getMinTempInt() { return minTempInt; };
+
     QByteArray openFile(QString *fileName);
     QByteArray nextImage(QByteArray info);
     QByteArray previousImage(QByteArray info);
 
-    // *** Composition between Blob and Layer ***
+    // *** Composition between Blob and Image ***
     QImage getImageThermalScale(QByteArray dynamicSubInfo);
+    QImage getImageBlueOrGrayScale(QByteArray dynamicSubInfo, QImage::Format grayscaleOrRgba64);
+
 
 
 private:
@@ -66,6 +74,8 @@ private:
     unsigned int headerBytes        = 0;
     unsigned int result             = 1;
     unsigned int intArraySize       = 0;
+    int maxTempInt                  = 0;
+    int minTempInt                  = 0;
 
     bool spinBoxActivated = false;
 
@@ -73,6 +83,7 @@ private:
     void calculateNextFrame(unsigned int rewFwd, QByteArray info);
     void calculatePreviousImageBytes(QByteArray info);
     void calculatePreviousFrame(unsigned int rewFwd, QByteArray info);
+    void calculateTemperature(QByteArray info, unsigned int rewFwd, unsigned int bytesIndex);
 
 
     static constexpr unsigned int quantityImgBytes      = 2048;

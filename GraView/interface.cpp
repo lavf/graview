@@ -28,6 +28,7 @@
 #include <QMessageBox>
 #include <QApplication>
 
+
 Interface::Interface(QWidget *parent)
     : QWidget(parent),
       blobObject(new Blob)
@@ -146,11 +147,31 @@ Interface::Interface(QWidget *parent)
 }
 
 void Interface::applySharpFilter() {
-
+    smoothFilterActivated = false;
+    if (blueScaleActivated == true) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_RGBA64)));
+        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
+    } else if (grayScaleActivated == true) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_Grayscale16)));
+        displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+    } else if (thermalActivated == true ) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoByteArray())));
+        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
+    }
 }
 
 void Interface::applySmoothFilter() {
-
+    smoothFilterActivated = true;
+    if (blueScaleActivated == true) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_RGBA64)));
+        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    } else if (grayScaleActivated == true) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_Grayscale16)));
+        displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    } else if (thermalActivated == true ) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoByteArray())));
+        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    }
 }
 
 void Interface::closeApp() {
@@ -168,7 +189,7 @@ void Interface::displayApp() {
     blueScaleActivated      = false;
     grayScaleActivated      = false;
     thermalActivated        = true;
-    smoothFilterActivated   = false;
+    smoothFilterActivated   = false;    
 
     // ********** Open the file **********
     QString *fileName = new QString(QFileDialog::getOpenFileName(this, tr("Select a binary file"), QDir::homePath(), "Binary file (*)"));
@@ -311,17 +332,38 @@ void Interface::displayApp() {
 }
 
 void Interface::displayBlueScale() {
+    QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_RGBA64)));
+    if (smoothFilterActivated == true)
+        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    else
+        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(),Qt::KeepAspectRatio));
+
+    blueScaleActivated = true;
+    thermalActivated   = false;
+    grayScaleActivated = false;
 }
 
 void Interface::displayFrameFromSpinBox() {
 }
 
 void Interface::displayGrayScale() {
+    QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_Grayscale16)));
+    if (smoothFilterActivated == true)
+        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    else
+        displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+
+    blueScaleActivated = false;
+    thermalActivated   = false;
+    grayScaleActivated = true;
 }
 
 void Interface::displayThermal() {
     QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoByteArray())));
-    displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+    if (smoothFilterActivated == true)
+        displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    else
+        displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
 
     blueScaleActivated = false;
     thermalActivated   = true;
@@ -333,17 +375,28 @@ void Interface::infoMessage() {
 }
 
 void Interface::nextFrame() {
-    if (thermalActivated == true) {
+    if (blueScaleActivated == true) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->nextImage(blobObject->getInfoByteArray()), QImage::Format_RGBA64)));
+        if (smoothFilterActivated == true)
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        else
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
+    } else if (thermalActivated == true) {
         QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->nextImage(blobObject->getInfoByteArray()))));
         if (smoothFilterActivated == true)
             displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
         else
             displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
-    } else if (blueScaleActivated == true) {
-
     } else {
-
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->nextImage(blobObject->getInfoByteArray()), QImage::Format_Grayscale16)));
+        if (smoothFilterActivated == true)
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        else
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
     }
+
+    labelMaxValue->setNum(blobObject->getMaxTempInt());
+    labelMinValue->setNum(blobObject->getMinTempInt());
 
     QString legendImgCount;
     legendImgCount.setNum(blobObject->getBytesIndex());
@@ -355,20 +408,32 @@ void Interface::paintEvent(QPaintEvent *) {
 }
 
 void Interface::previousFrame() {
-    if (thermalActivated == true) {
+    if (blueScaleActivated == true) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->previousImage(blobObject->getInfoByteArray()), QImage::Format_RGBA64)));
+        if (smoothFilterActivated == true)
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        else
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
+    } else if (thermalActivated == true){
         QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->previousImage(blobObject->getInfoByteArray()))));
         if (smoothFilterActivated == true)
             displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
         else
             displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
-    } else if (blueScaleActivated == true){
-    } else {        
+    } else {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->previousImage(blobObject->getInfoByteArray()), QImage::Format_Grayscale16)));
+        if (smoothFilterActivated == true)
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        else
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
     }
+
+    labelMaxValue->setNum(blobObject->getMaxTempInt());
+    labelMinValue->setNum(blobObject->getMinTempInt());
 
     QString legendImgCount;
     legendImgCount.setNum(blobObject->getBytesIndex());
     labelImgCount->setText(legendImgCount);
-
 }
 
 

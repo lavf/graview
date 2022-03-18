@@ -16,7 +16,6 @@
  */
 
 #include "blob.hpp"
-#include "layer.hpp"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -41,6 +40,8 @@ void Blob::calculateNextFrame(unsigned int rewFwd, QByteArray info) {
     else
         setBytesIndex(rewFwd + quantityImgBlckBytes);
 
+    // *** Calling function to calculate temperature ***
+    calculateTemperature(info, rewFwd, getBytesIndex());
     // *** Calling function to calculate image bytes ***
     calculateNextImageBytes(info);
 
@@ -121,6 +122,8 @@ void Blob::calculatePreviousFrame(unsigned int rewFwd, QByteArray info) {
             setBytesIndex(getBytesIndex() - quantityImgBlckBytes);
     }
 
+    // *** Calling function to calculate temperature ***
+    calculateTemperature(info, rewFwd, getBytesIndex());
     // *** Calling function to calculate image bytes ***
     calculatePreviousImageBytes(info);
 
@@ -180,6 +183,28 @@ void Blob::calculatePreviousImageBytes(QByteArray info) {
             setSubInfoByteArray(info.mid(getBytesIndex(), quantityImgBytes));
         // --- End of special case ---
     }
+}
+
+void Blob::calculateTemperature(QByteArray info, unsigned int rewFwd, unsigned int bytesIndex) {
+    // *** Little endian: max and min temperature value ***
+    unsigned char lowMin;
+    unsigned char highMin;
+    unsigned char lowMax;
+    unsigned char highMax;
+
+    QByteArray subInfoTem;
+
+    if (rewFwd == getHeaderBytes() || rewFwd == getBytesIndex())
+        subInfoTem = info.mid(7, 4);
+    else
+        subInfoTem = info.mid((bytesIndex - quantityBlckBytes + 1), 4);
+
+    highMin = subInfoTem.at(0);
+    lowMin  = subInfoTem.at(1);
+    highMax = subInfoTem.at(2);
+    lowMax  = subInfoTem.at(3);
+    setMaxTempInt((lowMax << 8) | highMax);
+    setMinTempInt((lowMin << 8) | highMin);
 }
 
 QByteArray Blob::nextImage(QByteArray info) {
@@ -245,6 +270,10 @@ QByteArray Blob::previousImage(QByteArray info) {
 }
 
 // *** Composition - Methods from Image Class ***
+
+QImage Blob::getImageBlueOrGrayScale(QByteArray dynamicSubInfo, QImage::Format grayscaleOrRgba64) {
+    return imageObject->blueOrGrayScaleImage(dynamicSubInfo, grayscaleOrRgba64);
+}
 
 QImage Blob::getImageThermalScale(QByteArray dynamicSubInfo) {
     return imageObject->thermalImage(dynamicSubInfo);
