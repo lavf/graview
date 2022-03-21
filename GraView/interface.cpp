@@ -29,6 +29,16 @@
 #include <QApplication>
 
 
+#define NEW 1
+#define OBJECT 2
+#define STATICX 3
+#define STATIC 4
+#define MISSING 5
+#define HUMAN 10
+#define CRITICAL 26
+#define WARNING 58
+#define ALARM 90
+
 Interface::Interface(QWidget *parent)
     : QWidget(parent),
       blobObject(new Blob)
@@ -405,6 +415,153 @@ void Interface::nextFrame() {
 }
 
 void Interface::paintEvent(QPaintEvent *) {
+    blobObject  ->extractObjArray(blobObject->getInfoByteArray());
+    blobObject  ->extractLineArray(blobObject->getInfoByteArray());
+
+    // ********** Object Recognition **********
+    if (objCheckBox->isChecked() == true) {
+        labelSpace->setVisible(false);
+
+        labelSpace->setVisible(false);
+
+        labelDescObj1->setVisible(true);
+        labelDescObj2->setVisible(true);
+        labelDescObj3->setVisible(true);
+        labelDescObj4->setVisible(true);
+        labelDescObj5->setVisible(true);
+        labelDescObj6->setVisible(true);
+        labelDescObj7->setVisible(true);
+        labelDescObj8->setVisible(true);
+        labelHumanObjs->setVisible(true);
+
+        // * unsigned is not accepted by QLabel::setNum() ---
+        int countObj   = 0;
+        int countHuman = 0;
+        unsigned int countNew      = 0;
+        unsigned int countObject   = 0;
+        unsigned int countStaticX  = 0;
+        unsigned int countStatic   = 0;
+        unsigned int countMissing  = 0;
+        unsigned int countCritical = 0;
+        unsigned int countWarning  = 0;
+        unsigned int countAlarm    = 0;
+
+        unsigned int state = 0;
+        static constexpr unsigned int objBytes = 12;
+
+        for (int j = 0; j < 16; ++j) {
+            if (blobObject->getSubInfoObjByteArray().at(objBytes * j) == 1) {
+
+                state = blobObject->getSubInfoObjByteArray().at((objBytes * j) + 8);
+
+                ++countObj;
+
+                switch (state) {
+                case NEW:
+                    ++countNew;
+                    break;
+                case OBJECT:
+                    ++countObject;
+                    break;
+                case STATICX:
+                    ++countStaticX;
+                    break;
+                case STATIC:
+                    ++countStatic;
+                    break;
+                case MISSING:
+                    ++countMissing;
+                    break;
+                case HUMAN:
+                    ++countHuman;
+                    break;
+                case CRITICAL:
+                    ++countCritical;
+                    break;
+                case WARNING:
+                    ++countWarning;
+                    break;
+                case ALARM:
+                    ++countAlarm;
+                    break;
+                }
+
+                QString labelCountNew;
+                labelCountNew.setNum(countNew);
+                QString labelCountObject;
+                labelCountObject.setNum(countObject);
+                QString labelCountStaticX;
+                labelCountStaticX.setNum(countStaticX);
+                QString labelCountStatic;
+                labelCountStatic.setNum(countStatic);
+                QString labelCountMissing;
+                labelCountMissing.setNum(countMissing);
+                QString labelCountCritical;
+                labelCountCritical.setNum(countCritical);
+                QString labelCountWarning;
+                labelCountWarning.setNum(countWarning);
+                QString labelCountAlarm;
+                labelCountAlarm.setNum(countAlarm);
+
+                labelDescObj1   ->setText("Ne\n" + labelCountNew);
+                labelDescObj1   ->setAlignment(Qt::AlignCenter);
+                labelDescObj2   ->setText("Ob\n" + labelCountObject);
+                labelDescObj2   ->setAlignment(Qt::AlignCenter);
+                labelDescObj3   ->setText("St\n" + labelCountStatic);
+                labelDescObj3   ->setAlignment(Qt::AlignCenter);
+                labelDescObj4   ->setText("Sx\n" + labelCountStaticX);
+                labelDescObj4   ->setAlignment(Qt::AlignCenter);
+                labelDescObj5   ->setText("Mi\n" + labelCountMissing);
+                labelDescObj5   ->setAlignment(Qt::AlignCenter);
+                labelDescObj6   ->setText("Cr\n" + labelCountCritical);
+                labelDescObj6   ->setAlignment(Qt::AlignCenter);
+                labelDescObj7   ->setText("Wa\n" + labelCountWarning);
+                labelDescObj7   ->setAlignment(Qt::AlignCenter);
+                labelDescObj8   ->setText("Al\n" + labelCountAlarm);
+                labelDescObj8   ->setAlignment(Qt::AlignCenter);
+                labelHumanObjs  ->setNum(countHuman);
+
+                // *** Label Status ***
+                if (countCritical != 0) {
+                    labelStatus->setText("Alarm State: CRITICAL");
+                    labelStatus->setStyleSheet("QLabel { color: #f5f5f5; background-color: green;}");
+                } else {
+                    labelStatus->setText("Alarm State: OFF");
+                    labelStatus->setStyleSheet("QLabel { color: #666666; background-color: #d6d6d6;}");
+                }
+            }
+        }
+        labelCountObj->setNum(countObj);
+
+        displayObj->setPixmap(blobObject->getLayerObjects());
+    } else {
+        labelSpace->setVisible(true);
+
+        labelDescObj1   ->setVisible(false);
+        labelDescObj2   ->setVisible(false);
+        labelDescObj3   ->setVisible(false);
+        labelDescObj4   ->setVisible(false);
+        labelDescObj5   ->setVisible(false);
+        labelDescObj6   ->setVisible(false);
+        labelDescObj7   ->setVisible(false);
+        labelDescObj8   ->setVisible(false);
+        labelHumanObjs  ->setVisible(false);
+
+        labelStatus->setText("File opened");
+        labelStatus->setStyleSheet("QLabel { background-color : #e7eded; color : #696868; }");
+
+        labelCountObj->setText("");
+
+        displayObj->setPixmap(blobObject->eraseLayer());
+    }
+
+    // ********** Floor and Body Lines **********
+    if (lineCheckBox->isChecked() == true) {
+        displayLines->setPixmap(blobObject->getLayerLines());
+    } else {
+        displayLines->setPixmap(blobObject->eraseLayer());
+    }
+
 }
 
 void Interface::previousFrame() {

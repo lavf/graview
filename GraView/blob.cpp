@@ -207,6 +207,25 @@ void Blob::calculateTemperature(QByteArray info, unsigned int rewFwd, unsigned i
     setMinTempInt((lowMin << 8) | highMin);
 }
 
+void Blob::extractLineArray(QByteArray info) {
+    // ********** Extract Array with Floor and Bodylines info **********
+    if (getRewFwdCount() == 0 || getRewFwdCount() == 477) {
+       setSubInfoFloorByteArray(info.mid(29, 128));
+       setSubInfoBodyByteArray(info.mid(157, 128));
+    } else {
+        setSubInfoFloorByteArray(info.mid((getBytesIndex() - quantityBlckBytes + 23), 128));
+        setSubInfoBodyByteArray(info.mid((getBytesIndex() - quantityBlckBytes + 151), 128));
+    }
+}
+
+void Blob::extractObjArray(QByteArray info) {
+    // ********** Extract Array with Object info **********
+    if (getRewFwdCount() == 0 || getRewFwdCount() == 477)
+       setSubInfoObjByteArray(info.mid(285, 192));
+    else
+        setSubInfoObjByteArray(info.mid((getBytesIndex() - quantityBlckBytes + 279), 192));
+}
+
 QByteArray Blob::nextImage(QByteArray info) {
     if (spinBoxActivated == false) {
         // ********** Calculate array of next frame after clicking next button *********
@@ -278,6 +297,22 @@ QImage Blob::getImageBlueOrGrayScale(QByteArray dynamicSubInfo, QImage::Format g
 QImage Blob::getImageThermalScale(QByteArray dynamicSubInfo) {
     return imageObject->thermalImage(dynamicSubInfo);
 }
+
+
+// *** Composition - Methods from Layer Class ***
+
+QPixmap Blob::eraseLayer() {
+    return layerObject->eraseDrawings();
+}
+
+QPixmap Blob::getLayerLines() {
+    return layerObject->drawLines(getSubInfoBodyByteArray(), getSubInfoFloorByteArray());
+}
+
+QPixmap Blob::getLayerObjects() {
+    return layerObject->drawObjects(getSubInfoObjByteArray());
+}
+
 
 // *** Destructor ***
 

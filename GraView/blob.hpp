@@ -26,6 +26,15 @@ public:
     void setInfoByteArray(QByteArray x) { info.replace(0, x.size(), x); };
     QByteArray& getInfoByteArray() { return info; }
 
+    void setSubInfoObjByteArray(QByteArray x) { subInfoObj.replace(0, x.size(), x); };
+    QByteArray& getSubInfoObjByteArray() { return subInfoObj; }
+
+    void setSubInfoBodyByteArray(QByteArray x) { subInfoBodyLine.replace(0, x.size(), x); };
+    QByteArray& getSubInfoBodyByteArray() { return subInfoBodyLine; }
+
+    void setSubInfoFloorByteArray(QByteArray x) { subInfoFloorLine.replace(0, x.size(), x); };
+    QByteArray& getSubInfoFloorByteArray() { return subInfoFloorLine; }
+
     void setRewFwdCount(unsigned int x) { rewFwdCount = x; };
     unsigned int& getRewFwdCount() { return rewFwdCount; };
 
@@ -52,20 +61,28 @@ public:
 
     QByteArray openFile(QString *fileName);
     QByteArray nextImage(QByteArray info);
-    QByteArray previousImage(QByteArray info);
+    QByteArray previousImage(QByteArray info);    
+    void extractObjArray(QByteArray info);
+    void extractLineArray(QByteArray info);
 
     // *** Composition between Blob and Image ***
     QImage getImageThermalScale(QByteArray dynamicSubInfo);
     QImage getImageBlueOrGrayScale(QByteArray dynamicSubInfo, QImage::Format grayscaleOrRgba64);
 
-
+    // *** Composition between Blob and Layer ***
+    QPixmap getLayerLines();
+    QPixmap getLayerObjects();
+    QPixmap eraseLayer();
 
 private:
     Image *imageObject;
     Layer *layerObject;
 
     QByteArray info;
-    QByteArray subInfo;
+    QByteArray subInfo;    
+    QByteArray subInfoObj;
+    QByteArray subInfoBodyLine;
+    QByteArray subInfoFloorLine;
 
     unsigned int rewFwdCount        = 0;
     unsigned int imgCount           = 1;
