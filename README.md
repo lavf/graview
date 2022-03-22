@@ -21,7 +21,7 @@
   <a href="#benutzerdokumentation">Benutzerdokumentation</a>
 </h5>
 
-
+&nbsp;
 ## Über das Projekt
 
 Qt-Widgets basierte Anwendung für Android 11 in C++11
