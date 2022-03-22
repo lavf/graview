@@ -10,7 +10,7 @@ class Image
 public:
     // Default constructor and destructor provided by compiler implicitly
     QImage blueOrGrayScaleImage(QByteArray subInfo, QImage::Format grayscaleOrRgba64);
-    QImage thermalImage(QByteArray subInfo);
+    QImage thermalImage(QByteArray subInfo);    
 
 private:
     static constexpr unsigned int imgHeight             = 32;
@@ -27,4 +27,3 @@ private:
 
 
 #endif // IMAGE_H
-

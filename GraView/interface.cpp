@@ -26,8 +26,8 @@
 #include <QProgressBar>
 #include <QPainter>
 #include <QMessageBox>
+#include <QLineEdit>
 #include <QApplication>
-
 
 #define NEW 1
 #define OBJECT 2
@@ -39,10 +39,12 @@
 #define WARNING 58
 #define ALARM 90
 
+
 Interface::Interface(QWidget *parent)
     : QWidget(parent),
       blobObject(new Blob)
 {
+    setWindowIcon(QIcon(":/icons/hdpiGraView.ico"));
     setWindowTitle(tr("GraView"));
 
     labelStatus                  = new QLabel;
@@ -50,6 +52,7 @@ Interface::Interface(QWidget *parent)
     displayBox                   = new QLabel;
     displayObj                   = new QLabel;
     displayLines                 = new QLabel;
+    displayHeatmap               = new QLabel;
     labelDescObj1                = new QLabel;
     labelDescObj2                = new QLabel;
     labelDescObj3                = new QLabel;
@@ -88,6 +91,7 @@ Interface::Interface(QWidget *parent)
 
     lineCheckBox                 = new QCheckBox;
     objCheckBox                  = new QCheckBox;
+    heatmapCheckBox              = new QCheckBox;
 
     openFileButton               = new QPushButton;
     nextButton                   = new QPushButton;
@@ -101,6 +105,17 @@ Interface::Interface(QWidget *parent)
     exitButton                   = new QPushButton;
     infoButton                   = new QPushButton;
 
+
+    // *** First icons to be displayed in Welcome Window ***
+    QIcon openIcon(QPixmap(":/icons/resources/folder.ico"));
+    openFileButton      ->setIcon(openIcon);
+    openFileButton      ->setIconSize(QSize(240, 240));
+    openFileButton      ->setStyleSheet("QPushButton { border: 10px solid transparent; border-radius: 15px;}");
+
+    QIcon exitIcon(QPixmap(":/icons/resources/close.ico"));
+    exitButton          ->setIcon(exitIcon);
+    exitButton          ->setIconSize(QSize(120, 120));
+    exitButton          ->setStyleSheet("QPushButton { border: 10px solid transparent; border-radius: 15px;}");
 
     // *** Creating connection for buttons ***
     connect(openFileButton,     SIGNAL(clicked()), this, SLOT(displayApp()));
@@ -118,23 +133,11 @@ Interface::Interface(QWidget *parent)
     displayBox->setFixedWidth(1200);
     displayBox->setFixedHeight(600);
 
-    displayBox->setText(tr("GraView"));
+    // ***
+    displayBox->setPixmap(QPixmap(":/logo/resources/logo.png").scaledToHeight(600));
 
     displayBox->setAlignment(Qt::AlignCenter);
 
-    openFileButton->setText(tr("Open file"));
-    exitButton->setText(tr("Exit"));
-    nextButton->setText(tr(">"));
-    previousButton->setText(tr("<"));
-    goToFrameButton->setText(tr("Jump to"));
-    objCheckBox->setText(tr("Objects"));
-    lineCheckBox->setText(tr("Lines"));
-    smoothButton->setText(tr("Smooth"));
-    sharpButton->setText(tr("Sharp"));
-    thermalScaleButton->setText(tr("Thermal"));
-    grayScaleButton->setText(tr("Grayscale"));
-    blueScaleButton->setText(tr("Bluescale"));
-    infoButton->setText(tr("Info"));
 
     mainLayout           = new QGridLayout;
     welcomeMenuBarLayout = new QVBoxLayout;
@@ -145,6 +148,7 @@ Interface::Interface(QWidget *parent)
     welcomeMenuBarLayout->addWidget(exitButton);
 
     imgLayersLayout->addWidget(displayBox,     0, 0);
+    imgLayersLayout->addWidget(displayHeatmap, 0, 0);
     imgLayersLayout->addWidget(displayLines,   0, 0);
     imgLayersLayout->addWidget(displayObj,     0, 0);
 
@@ -157,49 +161,93 @@ Interface::Interface(QWidget *parent)
 }
 
 void Interface::applySharpFilter() {
+    // --- UX selected button ---
+    sharpButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #7570ff; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+    smoothButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #B5B3ff; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+
     smoothFilterActivated = false;
-    if (blueScaleActivated == true) {
-        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_RGBA64)));
-        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
-    } else if (grayScaleActivated == true) {
-        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_Grayscale16)));
-        displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
-    } else if (thermalActivated == true ) {
-        QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoByteArray())));
-        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
+    if (blobObject->getSpinBoxActivated() == false) {
+        if (blueScaleActivated == true) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_RGBA64)));
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
+        } else if (grayScaleActivated == true) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_Grayscale16)));
+            displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+        } else if (thermalActivated == true ) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoByteArray())));
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
+        }
+    } else {
+        if (blueScaleActivated == true) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoSpinByteArray(), QImage::Format_RGBA64)));
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
+        } else if (grayScaleActivated == true) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoSpinByteArray(), QImage::Format_Grayscale16)));
+            displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+        } else if (thermalActivated == true ) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoSpinByteArray())));
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
+        }
     }
 }
 
 void Interface::applySmoothFilter() {
+    // --- UX selected button ---
+    smoothButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #7570ff; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+    sharpButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #B5B3ff; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+
     smoothFilterActivated = true;
-    if (blueScaleActivated == true) {
-        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_RGBA64)));
-        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    } else if (grayScaleActivated == true) {
-        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_Grayscale16)));
-        displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    } else if (thermalActivated == true ) {
-        QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoByteArray())));
-        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    if (blobObject->getSpinBoxActivated() == false) {
+        if (blueScaleActivated == true) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_RGBA64)));
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        } else if (grayScaleActivated == true) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_Grayscale16)));
+            displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        } else if (thermalActivated == true ) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoByteArray())));
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        }
+    } else {
+        if (blueScaleActivated == true) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoSpinByteArray(), QImage::Format_RGBA64)));
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        } else if (grayScaleActivated == true) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoSpinByteArray(), QImage::Format_Grayscale16)));
+            displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        } else if (thermalActivated == true ) {
+            QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoSpinByteArray())));
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        }
     }
 }
 
 void Interface::closeApp() {
+    // --- UX pressed button ---
+    exitButton->setStyleSheet("QPushButton { background-color : #cccccc; border: none }");
     // *** qApp is a global pointer to QApplication ***
     qApp->quit();
 }
 
 void Interface::displayApp() {
+    // --- UX pressed button ---
+    openFileButton->setStyleSheet("QPushButton { background-color : #cccccc; border: 10px solid transparent; border-radius: 15px;}");
+
     // ********** Reset values to default values: frame n°1, thermal colors, sharp filter **********
+    heatmapCheckBox         ->setCheckState(Qt::Unchecked);
+    blobObject              ->resetLayerArray();
+    blobObject              ->setSpinBoxActivated(false);
     blobObject              ->setImgCount(1);
     blobObject              ->setBytesIndex(0);
     blobObject              ->setNumberFrames(0);
     blobObject              ->setResult(1);
     blobObject              ->setRewFwdCount(blobObject->getHeaderBytes());
+    frameSpinBox            ->setValue(blobObject->getImgCount());
+    slider                  ->setValue(blobObject->getImgCount());
     blueScaleActivated      = false;
     grayScaleActivated      = false;
     thermalActivated        = true;
-    smoothFilterActivated   = false;    
+    smoothFilterActivated   = false;
 
     // ********** Open the file **********
     QString *fileName = new QString(QFileDialog::getOpenFileName(this, tr("Select a binary file"), QDir::homePath(), "Binary file (*)"));
@@ -211,9 +259,75 @@ void Interface::displayApp() {
 
     displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio));
 
+    // ********** Button / Icon Management **********
+    openFileButton->setIconSize(QSize(90, 90));
+    openFileButton->setStyleSheet("QPushButton { background-color: #fdfdfd; border: 6px solid transparent; border-radius: 15px;}");
+
+    exitButton->setIconSize(QSize(70, 70));
+    exitButton->setStyleSheet("QPushButton { background-color: #fdfdfd; padding-top: 10px ; padding-bottom: 10px; border: 6px solid transparent; border-radius: 15px;}");
+
+    QIcon previousIcon(QPixmap(":/icons/left.ico"));
+    previousButton->setIcon(previousIcon);
+    previousButton->setIconSize(QSize(70, 70));
+    previousButton->setStyleSheet("QPushButton { background-color: #fdfdfd; padding-top: 10px ; padding-bottom: 10px; border: 6px solid transparent; border-radius: 15px;}");
+
+    QIcon nextIcon(QPixmap(":/icons/right.ico"));
+    nextButton->setIcon(nextIcon);
+    nextButton->setIconSize(QSize(70, 70));
+    nextButton->setStyleSheet("QPushButton { background-color: #fdfdfd; padding-top: 10px ; padding-bottom: 10px; border: 6px solid transparent; border-radius: 15px;}");
+
+    QIcon refreshIcon(QPixmap(":/icons/goto.ico"));
+    goToFrameButton->setIcon(refreshIcon);
+    goToFrameButton->setIconSize(QSize(90, 90));
+    goToFrameButton->setStyleSheet("QPushButton { background-color: #fdfdfd; padding-top: 10px ; padding-bottom: 10px; border: 6px solid transparent; border-radius: 15px;}");
+
+    QIcon grayIcon(QPixmap(":/icons/grayscale.ico"));
+    grayScaleButton->setIcon(grayIcon);
+    grayScaleButton->setIconSize(QSize(90, 90));
+    grayScaleButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #B3FFB3; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+
+    QIcon thermalIcon(QPixmap(":/icons/thermal.ico"));
+    thermalScaleButton->setIcon(thermalIcon);
+    thermalScaleButton->setIconSize(QSize(90, 90));
+    thermalScaleButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #85FF85; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+
+    QIcon smoothIcon(QPixmap(":/icons/smooth.ico"));
+    smoothButton->setIcon(smoothIcon);
+    smoothButton->setIconSize(QSize(90, 90));
+    smoothButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #B5B3ff; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+
+    QIcon sharpIcon(QPixmap(":/icons/sharpness.ico"));
+    sharpButton->setIcon(sharpIcon);
+    sharpButton->setIconSize(QSize(90, 90));
+    sharpButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #7570ff; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+
+    QIcon blueIcon(QPixmap(":/icons/bluescale.ico"));
+    blueScaleButton->setIcon(blueIcon);
+    blueScaleButton->setIconSize(QSize(75, 75));
+    blueScaleButton->setStyleSheet("QPushButton { padding-top: 17px ; padding-bottom: 17px; background-color: #B3FFB3; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+
+    QIcon objIcon(QPixmap(":/icons/object.ico"));
+    objCheckBox->setIcon(objIcon);
+    objCheckBox->setIconSize(QSize(90, 90));
+
+    QIcon lineIcon(QPixmap(":/icons/lines.ico"));
+    lineCheckBox->setIcon(lineIcon);
+    lineCheckBox->setIconSize(QSize(90, 90));
+
+    QIcon heatmapIcon(QPixmap(":/icons/heatmap.ico"));
+    heatmapCheckBox->setIcon(heatmapIcon);
+    heatmapCheckBox->setIconSize(QSize(90, 90));
+
+    QIcon infoIcon(QPixmap(":/icons/info.ico"));
+    infoButton->setIcon(infoIcon);
+    infoButton->setIconSize(QSize(80, 80));
+    infoButton->setStyleSheet("QPushButton { background-color: #fdfdfd; padding-top: 5px ; padding-bottom: 5px; border: 6px solid transparent; border-radius: 15px;}");
+
     // ********** Label Management **********
-    labelTitle ->setText("GraView");
+    labelTitle ->setPixmap(QPixmap(":/logo/logoGraViewTitle.png").scaledToWidth(1200));
     labelStatus->setText("File opened");
+    labelStatus->setAlignment(Qt::AlignCenter);
+    labelStatus->setStyleSheet("QLabel { background-color : #e7eded; color : #696868; }");
 
     labelLegendSizeArrayText->setText("Total Bytes:");
     QString legendSizeArray;
@@ -221,21 +335,74 @@ void Interface::displayApp() {
     labelSizeArray->setText(legendSizeArray);
 
     labelLegendNumberFrames->setText("N° Frame");
+    labelLegendNumberFrames->setStyleSheet("QLabel { font-size: 18px; color: #868686; }");
+    labelLegendNumberFrames->setAlignment(Qt::AlignCenter);
 
     labelLegendTotalObjsText->setText("Total Objs.");
+    labelLegendTotalObjsText->setStyleSheet("QLabel { font-size: 18px; color: #868686; }");
+    labelLegendTotalObjsText->setAlignment(Qt::AlignCenter);
+    labelCountObj           ->setStyleSheet("color: #868686;");
 
     labelLegendHumanObjText->setText("Human Obj.");
+    labelLegendHumanObjText->setStyleSheet("QLabel { font-size: 18px; color: #868686; }");
+    labelLegendHumanObjText->setAlignment(Qt::AlignCenter);
 
     labelLegendImgText->setText("Byte Index");
+    labelLegendImgText->setStyleSheet("font-size: 18px; color: #868686;");
+    labelLegendImgText->setAlignment(Qt::AlignCenter);
+    labelImgCount     ->setStyleSheet("color: #868686;");
     QString legendImgCount;
     legendImgCount.setNum(blobObject->getHeaderBytes());
     labelImgCount    ->setText(legendImgCount);
 
     labelLegendSizeArrayText->setText("Total Bytes");
+    labelLegendSizeArrayText->setStyleSheet("font-size: 18px; color: #868686;");
+    labelLegendSizeArrayText->setAlignment(Qt::AlignCenter);
+    labelSizeArray          ->setStyleSheet("color: #868686;");
 
     labelLegendMaxText->setText("Max Temp:");
+    labelLegendMaxText->setStyleSheet("font-size: 18px; color: #868686;");
+    labelLegendMaxText->setAlignment(Qt::AlignCenter);
+    labelMaxValue     ->setStyleSheet("color: #868686;");
+    labelMaxValue     ->setNum(blobObject->getMaxTempInt());
 
     labelLegendMinText ->setText("Min Temp:");
+    labelLegendMinText ->setStyleSheet("font-size: 18px; color: #868686;");
+    labelLegendMinText ->setAlignment(Qt::AlignCenter);
+    labelMinValue      ->setStyleSheet("color: #868686;");
+    labelMinValue      ->setNum(blobObject->getMinTempInt());
+
+    // *** Label / Icon Management ***
+    labelLegendImg      ->setPixmap(QPixmap(":/icons/booleangrey.ico"));
+    labelLegendImg      ->setAlignment(Qt::AlignCenter);
+    labelLegendSizeArray->setPixmap(QPixmap(":/icons/chipgrey.ico"));
+    labelLegendSizeArray->setAlignment(Qt::AlignCenter);
+    labelLegendTotalObjs->setPixmap(QPixmap(":/icons/totalobjsgrey.ico"));
+    labelLegendTotalObjs->setAlignment(Qt::AlignCenter);
+    labelLegendHumanObj ->setPixmap(QPixmap(":/icons/humangrey.ico"));
+    labelLegendHumanObj ->setAlignment(Qt::AlignCenter);
+    labelIconFrameNr    ->setPixmap(QPixmap(":/icons/frame.ico"));
+    labelIconFrameNr    ->setFixedHeight(80);
+    labelIconFrameNr    ->setAlignment(Qt::AlignCenter);
+    labelLegendMin      ->setPixmap(QPixmap(":/icons/mintempgrey.ico"));
+    labelLegendMin      ->setAlignment(Qt::AlignCenter);
+    labelLegendMax      ->setPixmap(QPixmap(":/icons/maxtempgrey.ico"));
+    labelLegendMax      ->setAlignment(Qt::AlignCenter);
+
+    // *** SpinBox features ***
+    frameSpinBox->setValue(blobObject->getImgCount());
+    frameSpinBox->setMaximum(blobObject->getNumberFrames());
+    frameSpinBox->setMinimum(1);
+    frameSpinBox->setStyleSheet("QSpinBox { font-size: 85px; }");
+
+    QLineEdit *frameLineEdit(frameSpinBox->findChild<QLineEdit *>());
+    frameLineEdit->setReadOnly(true);
+    frameLineEdit->setFocusPolicy(Qt::NoFocus);
+
+
+    // *** Slider features ***
+    slider->setMaximumWidth(displayBox->width());
+    slider->setMaximum(blobObject->getNumberFrames());
 
     // ********** Layout Management **********
     frameDescriptionLayout      = new QGridLayout;
@@ -301,7 +468,7 @@ void Interface::displayApp() {
     sideMenuBar->addWidget(grayScaleButton,    1, 0, 1, 2);
     sideMenuBar->addWidget(thermalScaleButton, 1, 2, 1, 2);
     sideMenuBar->addWidget(blueScaleButton,    1, 4, 1, 2);
-    sideMenuBar->addWidget(labelSpace,         1, 6, 1, 2);
+    sideMenuBar->addWidget(heatmapCheckBox,    1, 6, 1, 2);
 
     sideMenuBar->addWidget(smoothButton,       2, 0, 1, 2);
     sideMenuBar->addWidget(sharpButton,        2, 2, 1, 2);
@@ -342,49 +509,116 @@ void Interface::displayApp() {
 }
 
 void Interface::displayBlueScale() {
-    QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_RGBA64)));
-    if (smoothFilterActivated == true)
-        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    else
-        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(),Qt::KeepAspectRatio));
+    // --- UX selected button ---
+    blueScaleButton     ->setStyleSheet("QPushButton { padding-top: 17px ; padding-bottom: 17px; background-color: #85FF85; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+    grayScaleButton     ->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #B3FFB3; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+    thermalScaleButton  ->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #B3FFB3; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
 
+    if (blobObject->getSpinBoxActivated() == false) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_RGBA64)));
+        if (smoothFilterActivated == true)
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        else
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(),Qt::KeepAspectRatio));
+    } else {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoSpinByteArray(), QImage::Format_RGBA64)));
+        if (smoothFilterActivated == true)
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        else
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(),Qt::KeepAspectRatio));
+    }
     blueScaleActivated = true;
     thermalActivated   = false;
     grayScaleActivated = false;
 }
 
 void Interface::displayFrameFromSpinBox() {
+    // --- UX pressed button ---
+    goToFrameButton->setStyleSheet("QPushButton { background-color : #cccccc; padding-top: 10px ; padding-bottom: 10px; border: 6px solid transparent; border-radius: 15px;}");
+    blobObject->setResult(frameSpinBox->value());
+    blobObject->getSpinBoxValue();
+
+    if (blueScaleActivated == true)
+        displayBlueScale();
+    else if (thermalActivated == true)
+        displayThermal();
+    else if (grayScaleActivated == true)
+        displayGrayScale();
+
+    // *** Setting max and min temperature ***
+    labelMaxValue->setNum(blobObject->getMaxTempInt());
+    labelMinValue->setNum(blobObject->getMinTempInt());
+    // *** Setting progress bar ***
+    slider->setValue(blobObject->getImgCount());
+    // *** Setting byte index ***
+    QString legendImgCount;
+    legendImgCount.setNum(blobObject->getBytesIndexSpin());
+    labelImgCount->setText(legendImgCount);
+
+    // --- UX released button ---
+    goToFrameButton->setStyleSheet("QPushButton { background-color : #fdfdfd; padding-top: 10px ; padding-bottom: 10px; border: 6px solid transparent; border-radius: 15px;}");
 }
 
 void Interface::displayGrayScale() {
-    QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_Grayscale16)));
-    if (smoothFilterActivated == true)
-        displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    else
-        displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+    // --- UX selected button ---
+    grayScaleButton    ->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #85FF85; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+    thermalScaleButton ->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #B3FFB3; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+    blueScaleButton    ->setStyleSheet("QPushButton { padding-top: 17px ; padding-bottom: 17px; background-color: #B3FFB3; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
 
+    if (blobObject->getSpinBoxActivated() == false) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoByteArray(), QImage::Format_Grayscale16)));
+        if (smoothFilterActivated == true)
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        else
+            displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+    } else {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->getSubInfoSpinByteArray(), QImage::Format_Grayscale16)));
+        if (smoothFilterActivated == true)
+            displayBox->setPixmap(p.scaled(displayBox->width(), displayBox->height(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        else
+            displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+    }
     blueScaleActivated = false;
     thermalActivated   = false;
     grayScaleActivated = true;
 }
 
 void Interface::displayThermal() {
-    QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoByteArray())));
-    if (smoothFilterActivated == true)
-        displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    else
-        displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+    // --- UX selected button ---
+    thermalScaleButton ->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #85FF85; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+    grayScaleButton    ->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color: #B3FFB3; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
+    blueScaleButton    ->setStyleSheet("QPushButton { padding-top: 17px ; padding-bottom: 17px; background-color: #B3FFB3; border-style: solid; border-color: transparent; border-width: 4px; border-radius: 15px; }");
 
+    if (blobObject->getSpinBoxActivated() == false) {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoByteArray())));
+        if (smoothFilterActivated == true)
+            displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        else
+            displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+    } else {
+        QPixmap p(QPixmap::fromImage(blobObject->getImageThermalScale(blobObject->getSubInfoSpinByteArray())));
+        if (smoothFilterActivated == true)
+            displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        else
+            displayBox->setPixmap(p.scaled(displayBox->width(),displayBox->height(),Qt::KeepAspectRatio));
+    }
     blueScaleActivated = false;
     thermalActivated   = true;
     grayScaleActivated = false;
 }
 
 void Interface::infoMessage() {
+    // --- UX pressed button ---
+    infoButton->setStyleSheet("QPushButton { padding-top: 5px ; padding-bottom: 5px; background-color : #cccccc; border: 6px solid transparent; border-radius: 15px;}");
     QMessageBox::information(this, tr("About"), tr("GraView for Android 11\nQWidget-App using Qt 5.15.2\nVersion 1.0\n\nFor further info, please visit:\nhttps://github.com/lavf/graview"), QMessageBox::Ok);
+    // --- UX released button ---
+    infoButton->setStyleSheet("QPushButton { padding-top: 5px ; padding-bottom: 5px; background-color : #fdfdfd; border: 6px solid transparent; border-radius: 15px;}");
 }
 
 void Interface::nextFrame() {
+    // --- UX pressed button ---
+    nextButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color : #cccccc; border: 6px solid transparent; border-radius: 15px; }");
+
     if (blueScaleActivated == true) {
         QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->nextImage(blobObject->getInfoByteArray()), QImage::Format_RGBA64)));
         if (smoothFilterActivated == true)
@@ -412,6 +646,11 @@ void Interface::nextFrame() {
     legendImgCount.setNum(blobObject->getBytesIndex());
     labelImgCount->setText(legendImgCount);
 
+    slider       ->setValue(blobObject->getImgCount());
+    frameSpinBox ->setValue(blobObject->getImgCount());
+
+    // --- UX released button ---
+    nextButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color : #fdfdfd; border: 6px solid transparent; border-radius: 15px;}");
 }
 
 void Interface::paintEvent(QPaintEvent *) {
@@ -505,21 +744,30 @@ void Interface::paintEvent(QPaintEvent *) {
 
                 labelDescObj1   ->setText("Ne\n" + labelCountNew);
                 labelDescObj1   ->setAlignment(Qt::AlignCenter);
+                labelDescObj1   ->setStyleSheet("QLabel { font-size: 50px; border: 3px solid yellow; color: gray;}");
                 labelDescObj2   ->setText("Ob\n" + labelCountObject);
                 labelDescObj2   ->setAlignment(Qt::AlignCenter);
+                labelDescObj2   ->setStyleSheet("QLabel { font-size: 50px; border: 3px solid yellow; color: gray;}");
                 labelDescObj3   ->setText("St\n" + labelCountStatic);
                 labelDescObj3   ->setAlignment(Qt::AlignCenter);
+                labelDescObj3   ->setStyleSheet("QLabel { font-size: 50px; border: 3px solid magenta; color: gray;}");
                 labelDescObj4   ->setText("Sx\n" + labelCountStaticX);
                 labelDescObj4   ->setAlignment(Qt::AlignCenter);
+                labelDescObj4   ->setStyleSheet("QLabel { font-size: 50px; border: 3px solid blue; color: gray;}");
                 labelDescObj5   ->setText("Mi\n" + labelCountMissing);
                 labelDescObj5   ->setAlignment(Qt::AlignCenter);
+                labelDescObj5   ->setStyleSheet("QLabel { font-size: 50px; border: 3px solid white; color: gray;}");
                 labelDescObj6   ->setText("Cr\n" + labelCountCritical);
                 labelDescObj6   ->setAlignment(Qt::AlignCenter);
+                labelDescObj6   ->setStyleSheet("QLabel { font-size: 50px; border: 3px solid darkgreen; color: gray;}");
                 labelDescObj7   ->setText("Wa\n" + labelCountWarning);
                 labelDescObj7   ->setAlignment(Qt::AlignCenter);
+                labelDescObj7   ->setStyleSheet("QLabel { font-size: 50px; border: 3px solid darkred; color: gray;}");
                 labelDescObj8   ->setText("Al\n" + labelCountAlarm);
                 labelDescObj8   ->setAlignment(Qt::AlignCenter);
+                labelDescObj8   ->setStyleSheet("QLabel { font-size: 50px; border: 3px solid red; color: gray;}");
                 labelHumanObjs  ->setNum(countHuman);
+                labelHumanObjs  ->setStyleSheet("QLabel { color: #868686;}");
 
                 // *** Label Status ***
                 if (countCritical != 0) {
@@ -562,9 +810,54 @@ void Interface::paintEvent(QPaintEvent *) {
         displayLines->setPixmap(blobObject->eraseLayer());
     }
 
+    // ********** Heatmap **********
+    if (heatmapCheckBox->isChecked() == true) {
+        if (labelHumanObjs->isVisible() == false)
+            labelHumanObjs->setVisible(true);
+
+        QPixmap  pixmapFromLayer = blobObject->getLayerHeatmap();
+        QPainter painterHeatmap(&pixmapFromLayer);
+
+        int                             countHuman = 0;
+        unsigned int                    state      = 0;
+        static constexpr unsigned int   objBytes   = 12;
+        double                          pixelSize  = 17;
+
+        for (int j = 0; j < 16; ++j) {
+            if (blobObject->getSubInfoObjByteArray().at(objBytes * j) == 1) {
+                state = blobObject->getSubInfoObjByteArray().at((objBytes * j) + 8);
+                if (state == 10) {
+                    ++countHuman;
+                }
+                labelHumanObjs->setNum(countHuman);
+                labelHumanObjs->setStyleSheet("QLabel { color: #868686;}");
+            }
+        }
+
+        QPen penNew(Qt::white, pixelSize, Qt::SolidLine);
+        painterHeatmap.setPen(penNew);
+        painterHeatmap.setOpacity(0.4);
+
+        for (unsigned int i = 0; i < 104; ++i) {
+            if ( blobObject->getNewLayerArray(i * 2) != 0 &&
+                 blobObject->getNewLayerArray((i * 2) + 1) != 0 ) {
+                painterHeatmap.drawPoint(blobObject->getNewLayerArray(i * 2), blobObject->getNewLayerArray((i * 2) + 1));
+            }
+        }
+        displayHeatmap->setPixmap(pixmapFromLayer);
+    } else {
+        if (objCheckBox->isChecked() == true)
+            labelHumanObjs->setVisible(true);
+        else
+            labelHumanObjs->setVisible(false);
+        displayHeatmap->setPixmap(blobObject->eraseLayer());
+    }
 }
 
 void Interface::previousFrame() {
+    // --- UX pressed button ---
+    previousButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color : #cccccc; border: 6px solid transparent; border-radius: 15px;}");
+
     if (blueScaleActivated == true) {
         QPixmap p(QPixmap::fromImage(blobObject->getImageBlueOrGrayScale(blobObject->previousImage(blobObject->getInfoByteArray()), QImage::Format_RGBA64)));
         if (smoothFilterActivated == true)
@@ -591,6 +884,12 @@ void Interface::previousFrame() {
     QString legendImgCount;
     legendImgCount.setNum(blobObject->getBytesIndex());
     labelImgCount->setText(legendImgCount);
+
+    slider      ->setValue(blobObject->getImgCount());
+    frameSpinBox->setValue(blobObject->getImgCount());
+
+    // --- UX released button ---
+    previousButton->setStyleSheet("QPushButton { padding-top: 10px ; padding-bottom: 10px; background-color : #fdfdfd; border: 6px solid transparent; border-radius: 15px; }");
 }
 
 

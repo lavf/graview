@@ -1,0 +1,43 @@
+{
+    "logs": [
+        {
+            "outputFile": "/home/leticia/projects/finalProject/build-GraView-Android_Qt_5_15_2_Clang_Multi_Abi-Debug/android-build/build/intermediates/incremental/mergeDebugResources/merged.dir/values/values.xml",
+            "map": [
+                {
+                    "source": "/home/leticia/projects/finalProject/build-GraView-Android_Qt_5_15_2_Clang_Multi_Abi-Debug/android-build/res/values/libs.xml",
+                    "from": {
+                        "startLines": "-1,24,13,-1",
+                        "startColumns": "-1,4,4,-1",
+                        "startOffsets": "-1,784,347,-1",
+                        "endLines": "-1,27,22,-1",
+                        "endColumns": "-1,12,12,-1",
+                        "endOffsets": "-1,987,778,-1"
+                    },
+                    "to": {
+                        "startLines": "2,5,9,19",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,109,317,753",
+                        "endLines": "4,8,18,21",
+                        "endColumns": "12,12,12,12",
+                        "endOffsets": "104,312,748,864"
+                    }
+                },
+                {
+                    "source": "/home/leticia/Qt/5.15.2/android/src/android/java/res/values/strings.xml",
+                    "from": {
+                        "startLines": "-1,-1,-1,-1",
+                        "startColumns": "-1,-1,-1,-1",
+                        "startOffsets": "-1,-1,-1,-1"
+                    },
+                    "to": {
+                        "startLines": "22,23,24,25",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "869,977,1099,1211",
+                        "endColumns": "107,121,111,97",
+                        "endOffsets": "972,1094,1206,1304"
+                    }
+                }
+            ]
+        }
+    ]
+}

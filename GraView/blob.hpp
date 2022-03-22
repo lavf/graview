@@ -35,6 +35,9 @@ public:
     void setSubInfoFloorByteArray(QByteArray x) { subInfoFloorLine.replace(0, x.size(), x); };
     QByteArray& getSubInfoFloorByteArray() { return subInfoFloorLine; }
 
+    void setSubInfoSpinByteArray(QByteArray x) { subInfoSpin.replace(0, x.size(), x); };
+    QByteArray& getSubInfoSpinByteArray() { return subInfoSpin; }
+
     void setRewFwdCount(unsigned int x) { rewFwdCount = x; };
     unsigned int& getRewFwdCount() { return rewFwdCount; };
 
@@ -53,17 +56,27 @@ public:
     void setResult(unsigned int x) { result = x; };
     unsigned int& getResult() { return result; };
 
+    void setBytesIndexSpin(unsigned int x) { bytesIndexSpin = x; };
+    unsigned int& getBytesIndexSpin() { return bytesIndexSpin; };
+
+    void setRewFwdCountSpin(unsigned int x) { rewFwdCountSpin = x; };
+    unsigned int& getRewFwdCountSpin() { return rewFwdCountSpin; };
+
     void setMaxTempInt(unsigned int x) { maxTempInt = x; };
     int& getMaxTempInt() { return maxTempInt; };
 
     void setMinTempInt(unsigned int x) { minTempInt = x; };
     int& getMinTempInt() { return minTempInt; };
 
+    void setSpinBoxActivated(unsigned int x) { spinBoxActivated = x; };
+    bool& getSpinBoxActivated() { return spinBoxActivated; };
+
     QByteArray openFile(QString *fileName);
     QByteArray nextImage(QByteArray info);
-    QByteArray previousImage(QByteArray info);    
+    QByteArray previousImage(QByteArray info);
     void extractObjArray(QByteArray info);
     void extractLineArray(QByteArray info);
+    void getSpinBoxValue();
 
     // *** Composition between Blob and Image ***
     QImage getImageThermalScale(QByteArray dynamicSubInfo);
@@ -72,17 +85,22 @@ public:
     // *** Composition between Blob and Layer ***
     QPixmap getLayerLines();
     QPixmap getLayerObjects();
+    QPixmap getLayerHeatmap();
     QPixmap eraseLayer();
+    unsigned int& getNewLayerArray(unsigned int x);
+    void resetLayerArray();
+
 
 private:
-    Image *imageObject;
-    Layer *layerObject;
+    std::unique_ptr<Image> imageObject;
+    std::unique_ptr<Layer> layerObject;
 
     QByteArray info;
-    QByteArray subInfo;    
+    QByteArray subInfo;
     QByteArray subInfoObj;
     QByteArray subInfoBodyLine;
     QByteArray subInfoFloorLine;
+    QByteArray subInfoSpin;
 
     unsigned int rewFwdCount        = 0;
     unsigned int imgCount           = 1;
@@ -90,6 +108,8 @@ private:
     unsigned int numberFrames       = 0;
     unsigned int headerBytes        = 0;
     unsigned int result             = 1;
+    unsigned int bytesIndexSpin     = 0;
+    unsigned int rewFwdCountSpin    = 0;
     unsigned int intArraySize       = 0;
     int maxTempInt                  = 0;
     int minTempInt                  = 0;

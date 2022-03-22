@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>hdpiGraView.ico</file>
+        <file>right.ico</file>
+        <file>sharpness.ico</file>
+        <file>smooth.ico</file>
+        <file>thermal.ico</file>
+        <file>totalobjsgrey.ico</file>
+        <file>object.ico</file>
+        <file>mintempgrey.ico</file>
+        <file>maxtempgrey.ico</file>
+        <file>lines.ico</file>
+        <file>left.ico</file>
+        <file>info.ico</file>
+        <file>humangrey.ico</file>
+        <file>grayscale.ico</file>
+        <file>bluescale.ico</file>
+        <file>booleangrey.ico</file>
+        <file>chipgrey.ico</file>
+        <file>close.ico</file>
+        <file>folder.ico</file>
+        <file>frame.ico</file>
+        <file>goto.ico</file>
+        <file>heatmap.ico</file>
+    </qresource>
+    <qresource prefix="/logo">
+        <file>logoGraViewTitle.png</file>
+        <file>logo.png</file>
+    </qresource>
+</RCC>

@@ -194,7 +194,8 @@ void Blob::calculateTemperature(QByteArray info, unsigned int rewFwd, unsigned i
 
     QByteArray subInfoTem;
 
-    if (rewFwd == getHeaderBytes() || rewFwd == getBytesIndex())
+    if (((rewFwd == 0 && spinBoxActivated == true)|| rewFwd == getHeaderBytes() ||
+         (rewFwd == getBytesIndex() && spinBoxActivated == false)))
         subInfoTem = info.mid(7, 4);
     else
         subInfoTem = info.mid((bytesIndex - quantityBlckBytes + 1), 4);
@@ -207,23 +208,92 @@ void Blob::calculateTemperature(QByteArray info, unsigned int rewFwd, unsigned i
     setMinTempInt((lowMin << 8) | highMin);
 }
 
+void Blob::getSpinBoxValue() {
+    // ********** Obtain the SpinBox value and create the frame **********
+    spinBoxActivated = true;
+
+    // *** Standard files can have 130994 or 130995 bytes in total ***
+    // ***** Files with an extra byte had the following structure:
+    // ((header + 6 bytes) * image) + ((total nr of frames - 1) * (image + header)) + extra byte
+    // First frame has always 6 bytes extra *****
+    unsigned int fileWithExtraByte = ((quantityBlckBytes + 6) + quantityImgBytes) + (quantityImgBlckBytes * (getNumberFrames() - difference)) + difference;
+
+    // --- Depending on total bytes: 130994 or 130995 bytes, values are set accordingly ---
+    if(intArraySize <= fileWithExtraByte) {
+        if (getResult() == 1) {
+            setBytesIndexSpin(getHeaderBytes());
+            setRewFwdCountSpin(getHeaderBytes());
+            setResult(1);
+            setImgCount(getResult());
+        } else {
+            setBytesIndexSpin(getHeaderBytes() + (quantityImgBlckBytes * (getResult() - difference)));
+            setRewFwdCountSpin(getHeaderBytes() + (quantityImgBlckBytes * (getResult() - difference)));
+            setImgCount(getResult());
+        }
+    } else {
+        int index = 512;
+        if (getResult() == 1) {
+            bytesIndexSpin = headerBytes;
+            rewFwdCountSpin = headerBytes;
+            result = 1;
+            imgCount = getResult();
+        } else {
+            // --- Special case: File "record_0", this algorithm only works for this file with errors ---
+            if (getResult() >= 22 && getResult() <= 23) {
+                bytesIndexSpin = index + headerBytes + (quantityImgBlckBytes * (getResult() - difference));
+                rewFwdCountSpin = index + headerBytes + (quantityImgBlckBytes * (getResult() - difference));
+            } else if (getResult() == 24) {
+                bytesIndexSpin = quantityImgBytes - index + headerBytes + (quantityImgBlckBytes * (getResult() - difference));
+                rewFwdCountSpin = quantityImgBytes - index + headerBytes + (quantityImgBlckBytes * (getResult() - difference));
+            } else if (getResult() >= 25 && result <= 26) {
+                bytesIndexSpin = quantityImgBytes + headerBytes  + (quantityImgBlckBytes * (getResult() - difference));
+                rewFwdCountSpin = quantityImgBytes + headerBytes  + (quantityImgBlckBytes * (getResult() - difference));
+            } else if (getResult() >= 27 && result <= 41) {
+                bytesIndexSpin = (index * 2) + quantityImgBytes + headerBytes + (quantityImgBlckBytes * (getResult() - difference));
+                rewFwdCountSpin = (index * 2) + quantityImgBytes  + headerBytes + (quantityImgBlckBytes * (getResult() - difference));
+            } else if (getResult() >= 42 && getResult() <= 52) {
+                bytesIndexSpin = (index * 3) + quantityImgBytes + headerBytes + (quantityImgBlckBytes * (getResult() - difference));
+                rewFwdCountSpin = (index * 3) + quantityImgBytes  + headerBytes + (quantityImgBlckBytes * (getResult() - difference));
+            } else {
+                bytesIndexSpin = headerBytes + (quantityImgBlckBytes * (getResult() - difference));
+                rewFwdCountSpin = headerBytes + (quantityImgBlckBytes * (getResult() - difference));
+            }
+            imgCount = result;
+            // --- End of special case ---
+        }
+    }
+
+    setSubInfoSpinByteArray(getInfoByteArray().mid(getBytesIndexSpin(), quantityImgBytes));
+
+    calculateTemperature(getInfoByteArray(), getRewFwdCountSpin(), getBytesIndexSpin());
+}
+
 void Blob::extractLineArray(QByteArray info) {
     // ********** Extract Array with Floor and Bodylines info **********
     if (getRewFwdCount() == 0 || getRewFwdCount() == 477) {
        setSubInfoFloorByteArray(info.mid(29, 128));
        setSubInfoBodyByteArray(info.mid(157, 128));
     } else {
-        setSubInfoFloorByteArray(info.mid((getBytesIndex() - quantityBlckBytes + 23), 128));
-        setSubInfoBodyByteArray(info.mid((getBytesIndex() - quantityBlckBytes + 151), 128));
+        if (spinBoxActivated == false) {
+            setSubInfoFloorByteArray(info.mid((getBytesIndex() - quantityBlckBytes + 23), 128));
+            setSubInfoBodyByteArray(info.mid((getBytesIndex() - quantityBlckBytes + 151), 128));
+        } else {
+            setSubInfoFloorByteArray(info.mid((getBytesIndexSpin() - quantityBlckBytes + 23), 128));
+            setSubInfoBodyByteArray(info.mid((getBytesIndexSpin() - quantityBlckBytes + 151), 128));
+        }
     }
 }
 
 void Blob::extractObjArray(QByteArray info) {
     // ********** Extract Array with Object info **********
-    if (getRewFwdCount() == 0 || getRewFwdCount() == 477)
+    if (getRewFwdCount() == 0 || getRewFwdCount() == 477) {
        setSubInfoObjByteArray(info.mid(285, 192));
-    else
-        setSubInfoObjByteArray(info.mid((getBytesIndex() - quantityBlckBytes + 279), 192));
+    } else {
+        if (spinBoxActivated == false) {
+            setSubInfoObjByteArray(info.mid((getBytesIndex() - quantityBlckBytes + 279), 192));
+        } else
+            setSubInfoObjByteArray(info.mid((getBytesIndexSpin() - quantityBlckBytes + 279), 192));
+    }
 }
 
 QByteArray Blob::nextImage(QByteArray info) {
@@ -233,6 +303,10 @@ QByteArray Blob::nextImage(QByteArray info) {
         calculateNextFrame(getRewFwdCount(), info);
 
     } else {
+        // ********** Calculate array of next frame after using SpinBox *********
+        calculateNextFrame(getRewFwdCountSpin(), info);
+        spinBoxActivated = false;
+        setRewFwdCountSpin(getRewFwdCount());
     }
     return subInfo;
 }
@@ -252,6 +326,9 @@ QByteArray Blob::openFile(QString *fileName) {
         // *** Extracting total bytes ***
         intArraySize = (unsigned int)info.size();
         setIntArraySize(intArraySize);
+
+        // *** Calling function to calculate min and max temperature ***
+        calculateTemperature(info, getRewFwdCount(), getBytesIndex());
 
         // *** Extracting number of frames according to frame header ***
         QByteArray framesArray = info.mid(1, 1);
@@ -284,7 +361,16 @@ QByteArray Blob::openFile(QString *fileName) {
 }
 
 QByteArray Blob::previousImage(QByteArray info) {
-    calculatePreviousFrame(getRewFwdCount(), info);
+    if (spinBoxActivated == false) {
+        // ********** Calculate array of previous frame after clicking previous button *********
+        // --- Calculate from which byte the frame should be shown (first byte of frame array) ---
+        calculatePreviousFrame(getRewFwdCount(), info);
+    } else {
+        // ********** Calculate array of previous frame after using SpinBox *********
+        calculatePreviousFrame(getRewFwdCountSpin(), info);
+        spinBoxActivated = false;
+        setRewFwdCountSpin(getRewFwdCount());
+    }
     return subInfo;
 }
 
@@ -298,11 +384,14 @@ QImage Blob::getImageThermalScale(QByteArray dynamicSubInfo) {
     return imageObject->thermalImage(dynamicSubInfo);
 }
 
-
 // *** Composition - Methods from Layer Class ***
 
 QPixmap Blob::eraseLayer() {
     return layerObject->eraseDrawings();
+}
+
+QPixmap Blob::getLayerHeatmap() {
+    return layerObject->drawHeatmap(getSubInfoObjByteArray(), getImgCount());
 }
 
 QPixmap Blob::getLayerLines() {
@@ -313,6 +402,13 @@ QPixmap Blob::getLayerObjects() {
     return layerObject->drawObjects(getSubInfoObjByteArray());
 }
 
+unsigned int& Blob::getNewLayerArray(unsigned int x) {
+    return layerObject->getNewLayerArray(x);
+}
+
+void Blob::resetLayerArray() {
+    return layerObject->resetLayerArray();
+}
 
 // *** Destructor ***
 
