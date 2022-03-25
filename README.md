@@ -24,7 +24,7 @@
 
 Qt-Widgets basierte Anwendung für Android 11 in C++11
 
-<a href="https://www.notion.so/lavf/500dc47f6e4b41bd9f7bef15dfda4d2f?v=b69bddce8fb74575b77d4303fd16dffb">Projektplanung</a>
+Der erstellte Iterationsplan und das Kanban-Board befinden sich im <a href="https://www.notion.so/lavf/500dc47f6e4b41bd9f7bef15dfda4d2f?v=b69bddce8fb74575b77d4303fd16dffb">Projektplanung</a>
 
 &nbsp;
 ## Projektarbeit
@@ -32,10 +32,28 @@ Qt-Widgets basierte Anwendung für Android 11 in C++11
 &nbsp;
 ## Technische Rahmenbedingungen
 
+-	Kubuntu 20.04 64-Bit, Kernel Version 5.11.0-46-generic – Betriebssystem
+-	Qt Version 5.12.2 – Entwicklungsumgebung C++, Qt und APK
+-	Qt Creator 4.15.2 – IDE zur Entwicklung einer Android-Anwendung mit Qt und C++
+-	Qt for Android:
+  -	Gradle 7.2 – Erstellung der APK und AAB für Android-Geräte
+  -	JDK von OpenJDK für Linux – Entwicklung von Android-Anwendungen
+  -	Android NDK: NDK r21 – Kompilierung von Android-Anwendungen in nativem C++
+  -	Android Studio Artic Fox 2020.3.1 – Emulator für Android-Geräte
+
+
 &nbsp;
 ## Developer Documentation
 
+Die Entwicklerdokumentation befindet sich im <a href="https://lavf.github.io/graview/">Developer Documentation</a>.
+
 &nbsp;
 ## Benutzerdokumentation
+
+Einführungsvideo
+
+<p align="center">
+<video src="https://user-images.githubusercontent.com/73216174/160135469-ebf7dddc-cfad-4852-95ec-f2c72b89b5c3.mp4">
+</p>
 
 &nbsp;
