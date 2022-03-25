@@ -1,1 +1,4 @@
 theme: jekyll-theme-minimal
+title: GraView v1.0
+description: Qt Widgets-based App for Android 11 in C++11
+logo: /assets/resources/graviewIco.svg 
