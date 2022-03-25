@@ -1,37 +1,162 @@
-## Welcome to GitHub Pages
+# Developer Documentation - GraView v1.0
 
-You can use the [editor on GitHub](https://github.com/lavf/graview/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+&nbsp;
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+GraView version 1.0 is a Qt Widgets-based App for Android 11 in C++11. Qt 5.12 used in this application under the terms of GNU Lesser General Public License for Open-Source projects with educational purposes.
 
-### Markdown
+The GraView OOP-structure is as follows:
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+- <a href="#interface-class">Interface Class</a>
+- <a href="#blob-class">Blob Class</a>
+- <a href="#image-class">Image Class</a>
+- <a href="#layer-class">Layer Class</a>
+
+&nbsp;
+
+## Interface Class
+
+The Interface Class implements the Qt Widgets module, that is to say, it contains the QWidget class, which is the base class for all GUI objects. All raw pointers of this class are managed by the QWidget 'the parent'. Consequently, when the default destructor is called, first all child objects are destroyed and then the application exits (no need for manual delete).
 
 ```markdown
-Syntax highlighted code block
+class Interface : public QWidget
+{
+    Q_OBJECT
+    ...
+}
+```
+&nbsp;
+### Constructor
 
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```markdown
+Interface::Interface(QWidget *parent)
+    : QWidget(parent),
+      blobObject(new Blob) {
+}
 ```
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+&nbsp;
+### Private Slots
 
-### Jekyll Themes
+```markdown
+void displayApp();    
+```
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/lavf/graview/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+This method displays the layout and all GUI objects when a file is selected.
 
-### Support or Contact
+```markdown
+void paintEvent(QPaintEvent *);
+```
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+This method is in charge of exposing layers over the image. Therefore, is constantly updated even if there is nothing to draw.
+
+```markdown
+void displayBlueScale();
+```
+
+This method calls the blue scale filter from the Blob Object, which calls the method ```colorAssignation(QByteArray subInfo, QImage displayImage, QRgb colors [33])``` from the Image Object.
+  
+```markdown
+void displayThermal();
+```
+This method calls the thermal filter from the Blob Object, which calls the method ```grayOrBlueScaleAssignation(QByteArray subInfo, QImage displayImage)``` from the Image Object.
+
+```markdown
+void displayGrayScale();
+```
+
+```markdown
+void nextFrame();
+```
+
+```markdown
+void previousFrame();
+```
+
+```markdown
+void closeApp();
+```
+
+```markdown
+void applySmoothFilter();
+```
+
+```markdown
+void applySharpFilter();
+```
+
+```markdown
+void infoMessage();
+```
+
+```markdown
+void displayFrameFromSpinBox();
+```
+
+<a href="#developer-documentation---graview-v10">^ Go to top</a>
+
+&nbsp;
+
+## Blob Class
+
+There is an aggregation between the Blob class and the class "Interface", which contains GUI objects. This means that an Interface object HAS a Blob object but there is no dependency between each other. A Blob object can exist without instantiating the Interface class and can be used by another GUI class if needed.
+
+```markdown
+class Blob {
+}
+```
+
+&nbsp;
+### Constructor
+
+```markdown
+Blob::Blob()
+    : imageObject(new Image),
+      layerObject(new Layer) {
+}
+```
+
+&nbsp;
+### Public Methods
+
+&nbsp;
+### Private Methods
+
+<a href="#developer-documentation---graview-v10">^ Go to top</a>
+
+&nbsp;
+
+## Image Class
+
+```markdown
+class Image {
+}
+```
+
+&nbsp;
+### Constructor
+
+&nbsp;
+### Methods
+
+<a href="#developer-documentation---graview-v10">^ Go to top</a>
+
+## Layer Class
+
+```markdown
+class Layer {
+}
+```
+
+&nbsp;
+### Constructor
+
+&nbsp;
+### Methods
+
+<a href="#developer-documentation---graview-v10">^ Go to top</a>
+
+&nbsp;
+
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This documentation is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+
