@@ -29,14 +29,27 @@ a:hover {
 }
 
 .highlight {
-    background-color: #C9ADA7;
+  background-color: #C9ADA7;
 }
 
-.highlight .err {
-    color: #363852;
-    background-color: #C9ADA7;
+.highlight .k, .highlight .kv {
+    color: #D43300;
+    font-weight: 400;
 }
 
-code {
-    color: #363852;
+.highlight .nc {
+    color: #1C1CF0;
+    font-weight: 400;
 }
+
+.highlight .nf {
+    color: #4C7B08;
+    font-weight: 400;
+}
+
+.highlight .kt {
+    color: #2E62FF;
+    font-weight: 400;
+}
+
+
