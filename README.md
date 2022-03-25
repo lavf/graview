@@ -13,7 +13,7 @@
 
 <h5 align="center">
   <a href="#ueber-das-projekt">Über das Projekt</a>  |
-  <a href="#projektarbeit">Projektarbeit</a>  |
+  <a href="#informationsarchitektur">Informationsarchitektur</a>  |
   <a href="#technische-rahmenbedingungen">Technische Rahmenbedingungen</a>  |
   <a href="#developer-documentation">Developer Documentation</a>  |
   <a href="#benutzerdokumentation">Benutzerdokumentation</a>
@@ -27,7 +27,9 @@ Qt-Widgets basierte Anwendung für Android 11 in C++11
 Der erstellte Iterationsplan und das Kanban-Board befinden sich im <a href="https://www.notion.so/lavf/500dc47f6e4b41bd9f7bef15dfda4d2f?v=b69bddce8fb74575b77d4303fd16dffb">Projektplanung</a>
 
 &nbsp;
-## Projektarbeit
+## Informationsarchitektur
+
+<img src="https://user-images.githubusercontent.com/73216174/160161266-d16cfb6a-dc78-426e-bc56-fdc119cb1f4e.png">
 
 &nbsp;
 ## Technische Rahmenbedingungen
