@@ -53,7 +53,7 @@ Die Entwicklerdokumentation befindet sich im <a href="https://lavf.github.io/gra
 Einführungsvideo
 
 <p align="center">
-<video src="https://user-images.githubusercontent.com/73216174/160135469-ebf7dddc-cfad-4852-95ec-f2c72b89b5c3.mp4">
+<video src="https://user-images.githubusercontent.com/73216174/160137258-eab8c15f-4ecb-49b3-9106-244f478f0e3f.mp4">
 </p>
 
 &nbsp;
