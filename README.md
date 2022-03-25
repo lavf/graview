@@ -26,7 +26,7 @@ Qt-Widgets basierte Anwendung für Android 11 in C++11.
 
 <Hi-Fi-Prototyp>
 
-Der erstellte Iterationsplan und das Kanban-Board befinden sich im <a href="https://www.notion.so/lavf/500dc47f6e4b41bd9f7bef15dfda4d2f?v=b69bddce8fb74575b77d4303fd16dffb">Projektplanung</a>
+Der erstellte Iterationsplan und das Kanban-Board befinden sich im <a href="https://lavf.notion.site/500dc47f6e4b41bd9f7bef15dfda4d2f?v=b69bddce8fb74575b77d4303fd16dffb">Projektplanung</a>
 
 &nbsp;
 ## Informationsarchitektur
